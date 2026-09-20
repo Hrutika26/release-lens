@@ -1,10 +1,13 @@
 from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 from db.connection import create_db_pool
+from db.migrations import run_migrations
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.db_pool = await create_db_pool()
+
+    await run_migrations(app.state.db_pool)
 
     yield
 
