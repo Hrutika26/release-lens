@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 from db.connection import create_db_pool
 from db.migrations import run_migrations
+from api.projects import router as project_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -45,4 +47,5 @@ async def database_health(request: Request):
             "error": str(e),
         }
 
+app.include_router(project_router)
 
