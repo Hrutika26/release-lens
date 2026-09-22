@@ -1,0 +1,10 @@
+<h1>Projects</h1>
+
+@for (project of projects; track project.id) {
+  <div>
+    <h3>{{ project.name }}</h3>
+    <p>{{ project.description }}</p>
+  </div>
+} @empty {
+  <p>No projects found.</p>
+}

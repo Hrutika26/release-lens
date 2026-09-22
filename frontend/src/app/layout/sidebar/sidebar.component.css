@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: #172230;
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+}
+
+/* Brand */
+.sidebar-header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+
+  padding: 0 20px;
+
+  font-size: 18px;
+  font-weight: 600;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Navigation */
+.sidebar-nav {
+  padding: 16px 12px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 11px 12px;
+
+  color: #cbd5e1;
+  text-decoration: none;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  border-radius: 6px;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.sidebar-link.active {
+  background: #263548;
+  color: #ffffff;
+}
+
+/* Optional icon */
+.sidebar-icon {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Push footer to bottom */
+.sidebar-footer {
+  margin-top: auto;
+
+  padding: 16px 20px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  color: #94a3b8;
+  font-size: 13px;
+}
