@@ -3,8 +3,9 @@ from contextlib import asynccontextmanager
 from db.connection import create_db_pool
 from db.migrations import run_migrations
 from api.projects import router as project_router
+from api.release_import import router as release_import_router
 from fastapi.middleware.cors import CORSMiddleware
-
+from api.releases import router as release_router
 
 
 @asynccontextmanager
@@ -65,4 +66,6 @@ async def database_health(request: Request):
         }
 
 app.include_router(project_router)
+app.include_router(release_import_router)
+app.include_router(release_router)
 
