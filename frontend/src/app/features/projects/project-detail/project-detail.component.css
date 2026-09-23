@@ -7,9 +7,6 @@
   margin: 0 auto;
 }
 
-
-/* Back */
-
 .back-button {
   padding: 0;
 
@@ -28,9 +25,6 @@
 .back-button:hover {
   color: #0f172a;
 }
-
-
-/* Project header */
 
 .project-header {
   margin-bottom: 36px;
@@ -52,9 +46,6 @@
 
   font-size: 14px;
 }
-
-
-/* Section */
 
 .section {
   margin-top: 24px;
@@ -272,4 +263,160 @@
   color: #dc2626;
 
   font-size: 12px;
+}
+
+.project-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+/* Import */
+
+.selected-file {
+  margin-top: 8px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+.import-preview {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+.preview-row strong {
+  color: #0f172a;
+
+  font-weight: 600;
+}
+
+
+.preview-row.success strong {
+  color: #15803d;
+}
+
+
+.preview-row.warning strong {
+  color: #b45309;
+}
+
+
+.preview-divider {
+  height: 1px;
+
+  margin: 4px 0;
+
+  background: #e2e8f0;
+}
+
+/* Releases */
+
+.release-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.release-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  min-height: 88px;
+  padding: 18px 20px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.release-card:hover {
+  border-color: #cbd5e1;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.05);
+
+  transform: translateY(-1px);
+}
+
+.release-main {
+  flex: 1;
+}
+
+.release-version {
+  color: #0f172a;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.release-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 5px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.environment-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  gap: 6px;
+}
+
+.environment-badge {
+  padding: 4px 8px;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 999px;
+
+  background: #f8fafc;
+  color: #475569;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  text-transform: capitalize;
+}
+
+.release-arrow {
+  color: #94a3b8;
+
+  font-size: 20px;
 }

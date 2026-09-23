@@ -1,87 +1,154 @@
 <div class="project-detail-page">
 
-  <button
-    type="button"
-    class="back-button"
-    (click)="goBack()"
-  >
+  <button type="button" class="back-button" (click)="goBack()">
     ← Projects
   </button>
 
 
   @if (isLoading) {
 
-    <div class="loading-state">
-      Loading project...
-    </div>
+  <div class="loading-state">
+    Loading project...
+  </div>
 
   } @else if (project) {
 
-    <div class="project-header">
+  <div class="project-header">
 
-      <div>
-        <h1>
-          {{ project.name }}
-        </h1>
+    <div>
+      <h1>
+        {{ project.name }}
+      </h1>
 
-        <p>
-          {{
-            project.description
-              || 'No description'
-          }}
-        </p>
-      </div>
+      <p>
+        {{
+        project.description
+        || 'No description'
+        }}
+      </p>
+    </div>
 
-      <button
-      type="button"
-      class="secondary-button"
-      (click)="openEditProjectModal(editProjectModal)"
-    >
-      Edit Project
-    </button>
+    <div class="project-actions">
+
+      <button type="button" class="secondary-button" (click)="openEditProjectModal(editProjectModal)">
+        Edit Project
+      </button>
+
+      <button type="button" class="primary-button" (click)="openImportReleaseModal(importReleaseModal)">
+        + Import Release
+      </button>
 
     </div>
 
-    <div class="section">
+  </div>
 
-      <div class="section-header">
-        <div>
-          <h2>Releases</h2>
+  <div class="section">
 
-          <p>
-            Releases for this project will appear here.
-          </p>
-        </div>
+    <div class="section-header">
+
+      <div>
+        <h2>Releases</h2>
+
+        <p>
+          Imported releases and their environments.
+        </p>
       </div>
 
+    </div>
+
+
+    @if (isLoadingReleases) {
+
+    <div class="loading-state">
+      Loading releases...
+    </div>
+
+    } @else {
+
+    <div class="release-list">
+
+      @for (release of releases; track release.id) {
+
+      <div class="release-card">
+
+        <div class="release-main">
+
+          <div class="release-version">
+            {{ release.version }}
+          </div>
+
+          <div class="release-meta">
+
+            @if (release.commit_sha) {
+            <span>
+              {{ release.commit_sha }}
+            </span>
+            }
+
+            <span>
+              {{ release.environments.length }}
+              environment{{
+              release.environments.length === 1
+              ? ''
+              : 's'
+              }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="environment-list">
+
+          @for (
+          environment of release.environments;
+          track environment.id
+          ) {
+
+          <span class="environment-badge">
+            {{ environment.environment }}
+          </span>
+
+          }
+
+        </div>
+
+
+        <div class="release-arrow">
+          →
+        </div>
+
+      </div>
+
+      } @empty {
 
       <div class="empty-state">
 
         <h3>No releases yet</h3>
 
         <p>
-          Import your first release to begin analyzing telemetry.
+          Import your first NDJSON release to get started.
         </p>
 
-        <button
-          type="button"
-          class="primary-button"
-        >
+        <button type="button" class="primary-button" (click)="openImportReleaseModal(importReleaseModal)">
           + Import Release
         </button>
 
       </div>
 
+      }
+
     </div>
 
+    }
+
+  </div>
   }
 
 </div>
 
-<ng-template
-  #editProjectModal
-  let-modal
->
+<ng-template #editProjectModal let-modal>
 
   <div class="modal-header">
 
@@ -95,21 +162,13 @@
       </p>
     </div>
 
-    <button
-      type="button"
-      class="btn-close"
-      aria-label="Close"
-      (click)="modal.dismiss()"
-    >
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()">
     </button>
 
   </div>
 
 
-  <form
-    [formGroup]="editProjectForm"
-    (ngSubmit)="updateProject()"
-  >
+  <form [formGroup]="editProjectForm" (ngSubmit)="updateProject()">
 
     <div class="modal-body">
 
@@ -119,20 +178,15 @@
           Project Name
         </label>
 
-        <input
-          id="project-name"
-          type="text"
-          class="form-control"
-          formControlName="name"
-        />
+        <input id="project-name" type="text" class="form-control" formControlName="name" />
 
         @if (
-          editProjectForm.controls.name.touched &&
-          editProjectForm.controls.name.hasError('required')
+        editProjectForm.controls.name.touched &&
+        editProjectForm.controls.name.hasError('required')
         ) {
-          <span class="form-error">
-            Project name is required.
-          </span>
+        <span class="form-error">
+          Project name is required.
+        </span>
         }
 
       </div>
@@ -144,12 +198,7 @@
           Description
         </label>
 
-        <textarea
-          id="project-description"
-          class="form-control"
-          formControlName="description"
-          rows="4"
-        ></textarea>
+        <textarea id="project-description" class="form-control" formControlName="description" rows="4"></textarea>
 
       </div>
 
@@ -158,26 +207,198 @@
 
     <div class="modal-footer">
 
-      <button
-        type="button"
-        class="secondary-button"
-        (click)="modal.dismiss()"
-      >
+      <button type="button" class="secondary-button" (click)="modal.dismiss()">
         Cancel
       </button>
 
 
-      <button
-        type="submit"
-        class="primary-button"
-        [disabled]="isUpdating"
-      >
+      <button type="submit" class="primary-button" [disabled]="isUpdating">
         @if (isUpdating) {
-          Saving...
+        Saving...
         } @else {
-          Save Changes
+        Save Changes
         }
       </button>
+
+    </div>
+
+  </form>
+
+</ng-template>
+
+<ng-template #importReleaseModal let-modal>
+
+  <div class="modal-header">
+
+    <div>
+      <h5 class="modal-title">
+        Import Release
+      </h5>
+
+      <p class="modal-subtitle">
+        Upload an NDJSON telemetry file.
+      </p>
+    </div>
+
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+
+  </div>
+
+
+  <form [formGroup]="importReleaseForm" (ngSubmit)="previewReleaseImport()">
+
+    <div class="modal-body">
+
+      @if (!importPreview) {
+
+      <div class="form-group">
+
+        <label for="release-file">
+          NDJSON File
+        </label>
+
+        <input id="release-file" type="file" class="form-control" accept=".ndjson"
+          (change)="onImportFileSelected($event)" />
+
+        @if (
+        importReleaseForm.controls.file.touched &&
+        importReleaseForm.controls.file.hasError('required')
+        ) {
+        <span class="form-error">
+          NDJSON file is required.
+        </span>
+        }
+
+      </div>
+
+
+      @if (
+      importReleaseForm.controls.file.value
+      ) {
+
+      <div class="selected-file">
+        {{
+        importReleaseForm
+        .controls.file
+        .value?.name
+        }}
+      </div>
+
+      }
+
+      } @else {
+
+      <div class="import-preview">
+
+        <div class="preview-row">
+          <span>File</span>
+
+          <strong>
+            {{ importPreview.file_name }}
+          </strong>
+        </div>
+
+
+        <div class="preview-row">
+          <span>Version</span>
+
+          <strong>
+            {{ importPreview.release.version }}
+          </strong>
+        </div>
+
+
+        <div class="preview-row">
+          <span>Environment</span>
+
+          <strong>
+            {{ importPreview.environment.name }}
+          </strong>
+        </div>
+
+
+        <div class="preview-row">
+          <span>Commit</span>
+
+          <strong>
+            {{
+            importPreview.release.commit_sha
+            || '—'
+            }}
+          </strong>
+        </div>
+
+
+        <div class="preview-divider"></div>
+
+
+        <div class="preview-row">
+          <span>Total Records</span>
+
+          <strong>
+            {{ importPreview.validation.total_records }}
+          </strong>
+        </div>
+
+
+        <div class="preview-row success">
+          <span>Valid Records</span>
+
+          <strong>
+            {{ importPreview.validation.valid_records }}
+          </strong>
+        </div>
+
+
+        <div class="preview-row warning">
+          <span>Invalid Records</span>
+
+          <strong>
+            {{ importPreview.validation.invalid_records }}
+          </strong>
+        </div>
+
+      </div>
+
+      }
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button type="button" class="secondary-button" (click)="modal.dismiss()">
+        Cancel
+      </button>
+
+
+      @if (!importPreview) {
+
+      <button type="submit" class="primary-button" [disabled]="
+            importReleaseForm.invalid ||
+            isPreviewingImport
+          ">
+        @if (isPreviewingImport) {
+        Validating...
+        } @else {
+        Preview Import
+        }
+      </button>
+
+      } @else {
+
+      <button type="button" class="primary-button" [disabled]="
+            !importPreview.can_import ||
+            isConfirmingImport
+          " (click)="confirmReleaseImport()">
+        @if (isConfirmingImport) {
+        Importing...
+        } @else {
+        Confirm Import
+        }
+      </button>
+
+      }
 
     </div>
 

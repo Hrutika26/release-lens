@@ -5,6 +5,8 @@ import { Project, UpdateProjectRequest } from '../project.model';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ImportPreview } from '../release.model.import';
+import { ReleaseSummary } from '../release.model';
 
 @Component({
   selector: 'app-project-detail',
@@ -34,6 +36,22 @@ export class ProjectDetailComponent {
 
   isUpdating = false;
 
+  importPreview: ImportPreview | null = null;
+
+  isPreviewingImport = false;
+  isConfirmingImport = false;
+
+  releases: ReleaseSummary[] = [];
+
+  isLoadingReleases = false;
+
+  importReleaseForm = this.formBuilder.group({
+    file: [
+      null as File | null,
+      Validators.required,
+    ],
+  });
+
   editProjectForm = this.formBuilder.group({
     name: [
       '',
@@ -48,6 +66,37 @@ export class ProjectDetailComponent {
 
   ngOnInit(): void {
     this.loadProject();
+    this.loadReleases()
+  }
+
+  loadReleases(): void {
+    const projectId = Number(
+      this.route.snapshot.paramMap.get('id')
+    );
+
+    if (!projectId) {
+      return;
+    }
+
+    this.isLoadingReleases = true;
+
+    this.projectService
+      .getReleases(projectId)
+      .subscribe({
+        next: releases => {
+          this.releases = releases;
+          this.isLoadingReleases = false;
+        },
+
+        error: error => {
+          console.error(
+            'Failed to load releases',
+            error,
+          );
+
+          this.isLoadingReleases = false;
+        },
+      });
   }
 
   loadProject() {
@@ -155,6 +204,117 @@ export class ProjectDetailComponent {
           backdrop: 'static',
         }
       );
+  }
+
+  onImportFileSelected(event: Event): void {
+    const input =
+      event.target as HTMLInputElement;
+
+    const file =
+      input.files?.[0] ?? null;
+
+    this.importReleaseForm.patchValue({
+      file,
+    });
+
+    this.importReleaseForm
+      .controls.file
+      .markAsTouched();
+  }
+
+  openImportReleaseModal(modal: TemplateRef<unknown>): void {
+    this.importReleaseForm.reset();
+
+    this.importPreview = null;
+
+    this.modalRef =
+      this.modalService.open(
+        modal,
+        {
+          centered: true,
+          size: 'md',
+          backdrop: 'static',
+        },
+      );
+  }
+
+  previewReleaseImport(): void {
+    if (
+      this.importReleaseForm.invalid ||
+      !this.project
+    ) {
+      this.importReleaseForm.markAllAsTouched();
+      return;
+    }
+
+    const file =
+      this.importReleaseForm
+        .controls.file
+        .value;
+
+    if (!file) {
+      return;
+    }
+
+    this.isPreviewingImport = true;
+
+    this.projectService
+      .previewReleaseImport(
+        this.project.id,
+        file,
+      )
+      .subscribe({
+        next: preview => {
+          this.importPreview = preview;
+          this.isPreviewingImport = false;
+        },
+
+        error: error => {
+          console.error(
+            'Failed to preview release import',
+            error,
+          );
+
+          this.isPreviewingImport = false;
+        },
+      });
+  }
+
+  confirmReleaseImport(): void {
+    if (
+      !this.project ||
+      !this.importPreview
+    ) {
+      return;
+    }
+
+    this.isConfirmingImport = true;
+
+    this.projectService
+      .confirmReleaseImport(
+        this.project.id,
+        this.importPreview.import_id,
+      )
+      .subscribe({
+        next: () => {
+          this.isConfirmingImport = false;
+
+          this.modalRef?.close();
+
+          this.importReleaseForm.reset();
+          this.importPreview = null;
+          this.loadReleases()
+        },
+
+        error: error => {
+          console.error(
+            'Failed to confirm release import',
+            error,
+          );
+
+          this.isConfirmingImport = false;
+        },
+      });
   }
 
 
