@@ -8,7 +8,6 @@ from services.services import Services
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
-
 async def create_project(data: ProjectCreate, services: Services = Depends(get_services)):
     return await services.project.create_project(data)
 
