@@ -1,0 +1,564 @@
+<div class="comparison-page">
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="goBack()"
+  >
+    ← Project
+  </button>
+
+
+  <div class="page-header">
+
+    <div>
+      <h1>
+        Compare Releases
+      </h1>
+
+      <p>
+        Compare performance between
+        two releases in the same environment.
+      </p>
+    </div>
+
+  </div>
+
+
+  @if (isLoadingReleases) {
+
+    <div class="loading-state">
+      Loading releases...
+    </div>
+
+  } @else {
+
+    <form
+      class="comparison-form"
+      [formGroup]="comparisonForm"
+      (ngSubmit)="compare()"
+    >
+
+      <div class="comparison-selector">
+
+        <div class="form-group">
+
+          <label for="base-release">
+            Baseline
+          </label>
+
+          <select
+            id="base-release"
+            class="form-control"
+            formControlName="baseEnvironmentId"
+          >
+
+            <option
+              [ngValue]="null"
+            >
+              Select baseline
+            </option>
+
+            @for (
+              option of baselineOptions;
+              track option.environmentId
+            ) {
+
+              <option
+                [ngValue]="option.environmentId"
+              >
+                {{ option.releaseVersion }}
+                /
+                {{ option.environment }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+
+        <div class="comparison-arrow">
+          →
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="target-release">
+            Target
+          </label>
+
+          <select
+            id="target-release"
+            class="form-control"
+            formControlName="targetEnvironmentId"
+          >
+
+            <option
+              [ngValue]="null"
+            >
+              Select target
+            </option>
+
+            @for (
+              option of environmentOptions;
+              track option.environmentId
+            ) {
+
+              <option
+                [ngValue]="option.environmentId"
+              >
+                {{ option.releaseVersion }}
+                /
+                {{ option.environment }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="
+            comparisonForm.invalid ||
+            isComparing
+          "
+        >
+
+          @if (isComparing) {
+            Comparing...
+          } @else {
+            Compare
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  }
+
+
+  @if (comparison) {
+
+    <div class="comparison-results">
+
+      <div class="comparison-title">
+
+        <div>
+          <strong>
+            {{ comparison.base_version }}
+          </strong>
+
+          <span>
+            {{ comparison.environment }}
+          </span>
+        </div>
+
+        <span class="comparison-title-arrow">
+          →
+        </span>
+
+        <div>
+          <strong>
+            {{ comparison.target_version }}
+          </strong>
+
+          <span>
+            {{ comparison.environment }}
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="summary-cards">
+
+        <div class="summary-card">
+
+          <span class="summary-label">
+            Requests
+          </span>
+
+          <strong>
+            {{
+              comparison
+                .summary
+                .total_requests
+                .target_value
+              | number:'1.0-0'
+            }}
+          </strong>
+
+          <span class="summary-change">
+            {{
+              comparison
+                .summary
+                .total_requests
+                .percentage_delta
+              | number:'1.1-1'
+            }}%
+          </span>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <span class="summary-label">
+            Avg Latency
+          </span>
+
+          <strong>
+            {{
+              comparison
+                .summary
+                .average_latency
+                .target_value
+              | number:'1.0-1'
+            }}
+            ms
+          </strong>
+
+          <span class="summary-change">
+            {{
+              comparison
+                .summary
+                .average_latency
+                .percentage_delta
+              | number:'1.1-1'
+            }}%
+          </span>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <span class="summary-label">
+            P95
+          </span>
+
+          <strong>
+            {{
+              comparison
+                .summary
+                .p95_latency
+                .target_value
+              | number:'1.0-1'
+            }}
+            ms
+          </strong>
+
+          <span class="summary-change">
+            {{
+              comparison
+                .summary
+                .p95_latency
+                .percentage_delta
+              | number:'1.1-1'
+            }}%
+          </span>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <span class="summary-label">
+            P99
+          </span>
+
+          <strong>
+            {{
+              comparison
+                .summary
+                .p99_latency
+                .target_value
+              | number:'1.0-1'
+            }}
+            ms
+          </strong>
+
+          <span class="summary-change">
+            {{
+              comparison
+                .summary
+                .p99_latency
+                .percentage_delta
+              | number:'1.1-1'
+            }}%
+          </span>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <span class="summary-label">
+            Error Rate
+          </span>
+
+          <strong>
+            {{
+              comparison
+                .summary
+                .error_rate
+                .target_value
+              | percent:'1.1-2'
+            }}
+          </strong>
+
+          <span class="summary-change">
+            {{
+              comparison
+                .summary
+                .error_rate
+                .absolute_delta
+              | percent:'1.1-2'
+            }}
+            pp
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="comparison-graphs">
+
+  <div class="graph-card">
+
+    <div class="graph-header">
+
+      <h3>
+        P95 Latency by Endpoint
+      </h3>
+
+      <p>
+        Baseline versus target latency.
+      </p>
+
+    </div>
+
+<app-comparison-bar-chart
+  [data]="p95ChartData"
+  [baseLabel]="comparison.base_version"
+  [targetLabel]="comparison.target_version"
+  [maxItems]="10"
+  unit=" ms"
+/>
+
+  </div>
+
+
+  <div class="graph-card">
+
+    <div class="graph-header">
+
+      <h3>
+        Error Rate by Endpoint
+      </h3>
+
+      <p>
+        Baseline versus target error rate.
+      </p>
+
+    </div>
+
+<app-comparison-bar-chart
+  [data]="errorRateChartData"
+  [baseLabel]="comparison.base_version"
+  [targetLabel]="comparison.target_version"
+  [maxItems]="10"
+  unit="%"
+/>
+
+  </div>
+
+</div>
+
+
+      <div class="endpoint-section">
+
+        <div class="section-header">
+
+          <h2>
+            Endpoint Comparison
+          </h2>
+
+          <p>
+            Performance changes by API operation.
+          </p>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+          <table class="comparison-table">
+
+            <thead>
+
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+
+                <th>Base P95</th>
+                <th>Target P95</th>
+                <th>P95 Change</th>
+
+                <th>Base Error</th>
+                <th>Target Error</th>
+                <th>Error Change</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (
+                endpoint of comparison.endpoints;
+                track endpoint.method + endpoint.endpoint
+              ) {
+
+                <tr>
+
+                  <td>
+                    <span class="method-badge">
+                      {{ endpoint.method }}
+                    </span>
+                  </td>
+
+
+                  <td class="endpoint-name">
+                    {{ endpoint.endpoint }}
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint.p95_latency.base_value !== null
+                    ) {
+                      {{
+                        endpoint
+                          .p95_latency
+                          .base_value
+                        | number:'1.0-1'
+                      }}
+                      ms
+                    } @else {
+                      —
+                    }
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint.p95_latency.target_value !== null
+                    ) {
+                      {{
+                        endpoint
+                          .p95_latency
+                          .target_value
+                        | number:'1.0-1'
+                      }}
+                      ms
+                    } @else {
+                      —
+                    }
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint
+                        .p95_latency
+                        .percentage_delta !== null
+                    ) {
+                      {{
+                        endpoint
+                          .p95_latency
+                          .percentage_delta
+                        | number:'1.1-1'
+                      }}%
+                    } @else {
+                      —
+                    }
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint.error_rate.base_value !== null
+                    ) {
+                      {{
+                        endpoint
+                          .error_rate
+                          .base_value
+                        | percent:'1.1-2'
+                      }}
+                    } @else {
+                      —
+                    }
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint.error_rate.target_value !== null
+                    ) {
+                      {{
+                        endpoint
+                          .error_rate
+                          .target_value
+                        | percent:'1.1-2'
+                      }}
+                    } @else {
+                      —
+                    }
+                  </td>
+
+
+                  <td>
+                    @if (
+                      endpoint
+                        .error_rate
+                        .absolute_delta !== null
+                    ) {
+                      {{
+                        endpoint
+                          .error_rate
+                          .absolute_delta
+                        | percent:'1.1-2'
+                      }}
+                      pp
+                    } @else {
+                      —
+                    }
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

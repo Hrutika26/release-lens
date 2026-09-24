@@ -317,5 +317,30 @@ export class ProjectDetailComponent {
       });
   }
 
+  openRelease(releaseId: number): void {
+  if (!this.project) {
+    return;
+  }
+
+  this.router.navigate([
+    '/projects',
+    this.project.id,
+    'releases',
+    releaseId,
+  ]);
+}
+
+openReleaseComparison(): void {
+  if (!this.project) {
+    return;
+  }
+
+  this.router.navigate([
+    '/projects',
+    this.project.id,
+    'compare',
+  ]);
+}
+
 
 }

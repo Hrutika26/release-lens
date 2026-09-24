@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+:host ::ng-deep .base-bar {
+  fill: #94a3b8;
+}
+
+:host ::ng-deep .target-bar {
+  fill: #2563eb;
+}
+
+:host ::ng-deep .base-bar:hover,
+:host ::ng-deep .target-bar:hover {
+  opacity: 0.85;
+}
+
+:host ::ng-deep .chart-tooltip {
+  position: absolute;
+  z-index: 9999;
+
+  padding: 10px 12px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #334155;
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  pointer-events: none;
+
+  opacity: 0;
+  visibility: hidden;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 6px 18px rgba(15, 23, 42, 0.12);
+}

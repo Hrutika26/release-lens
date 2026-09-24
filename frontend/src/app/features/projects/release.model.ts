@@ -17,3 +17,7 @@ export interface ReleaseSummary {
 
   environments: ReleaseEnvironment[];
 }
+
+export interface ReleaseDetail extends ReleaseSummary {
+  
+}

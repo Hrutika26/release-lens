@@ -1,0 +1,312 @@
+<div class="release-detail-page">
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="goBack()"
+  >
+    ← Project
+  </button>
+
+
+  @if (isLoading) {
+
+    <div class="loading-state">
+      Loading release...
+    </div>
+
+  } @else if (release) {
+
+    <div class="release-header">
+
+      <div>
+        <h1>
+          Release {{ release.version }}
+        </h1>
+
+        <div class="release-meta">
+
+          @if (release.commit_sha) {
+            <span>
+              Commit {{ release.commit_sha }}
+            </span>
+          }
+
+          <span>
+            {{ release.environments.length }}
+            environment{{
+              release.environments.length === 1
+                ? ''
+                : 's'
+            }}
+          </span>
+
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="environment-section">
+
+      <h2>
+        Environment
+      </h2>
+
+      <div class="environment-tabs">
+
+        @for (
+          environment of release.environments;
+          track environment.id
+        ) {
+
+          <button
+            type="button"
+            class="environment-tab"
+            [class.active]="
+              selectedEnvironment?.id === environment.id
+            "
+            (click)="selectEnvironment(environment)"
+          >
+            {{ environment.environment }}
+          </button>
+
+        }
+
+      </div>
+
+    </div>
+
+
+    @if (selectedEnvironment) {
+
+      <div class="environment-content">
+
+        <div class="environment-header">
+
+          <div>
+            <h2>
+              {{ selectedEnvironment.environment }}
+            </h2>
+
+            @if (selectedEnvironment.deployed_at) {
+              <p>
+                Deployed
+                {{
+                  selectedEnvironment.deployed_at
+                    | date:'MMM d, y, h:mm a'
+                }}
+              </p>
+            }
+
+          </div>
+
+        </div>
+
+
+         @if (isLoadingMetrics) {
+
+  <div class="loading-state">
+    Loading metrics...
+  </div>
+
+} @else if (metrics.length > 0) {
+
+  <div class="metrics-section">
+
+    <div class="metric-cards">
+
+      <div class="metric-card">
+        <span class="metric-label">
+          Total Requests
+        </span>
+
+        <strong class="metric-value">
+          {{ totalRequests }}
+        </strong>
+      </div>
+
+
+      <div class="metric-card">
+        <span class="metric-label">
+          Endpoints
+        </span>
+
+        <strong class="metric-value">
+          {{ endpointCount }}
+        </strong>
+      </div>
+
+
+      <div class="metric-card">
+        <span class="metric-label">
+          Avg Latency
+        </span>
+
+        <strong class="metric-value">
+          @if (averageLatency !== null) {
+            {{ averageLatency | number:'1.0-1' }} ms
+          } @else {
+            —
+          }
+        </strong>
+      </div>
+
+
+      <div class="metric-card">
+        <span class="metric-label">
+          Error Rate
+        </span>
+
+        <strong class="metric-value">
+          @if (errorRate !== null) {
+            {{ errorRate | percent:'1.1-2' }}
+          } @else {
+            —
+          }
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div class="endpoint-section">
+
+      <div class="section-header">
+
+        <div>
+          <h3>
+            Endpoint Metrics
+          </h3>
+
+          <p>
+            Performance metrics grouped by endpoint.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="metrics-table-wrapper">
+
+        <table class="metrics-table">
+
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Requests</th>
+              <th>Avg</th>
+              <th>P50</th>
+              <th>P95</th>
+              <th>P99</th>
+              <th>Error Rate</th>
+            </tr>
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              metric of metrics;
+              track metric.method + metric.endpoint
+            ) {
+
+              <tr>
+
+                <td>
+                  <span class="method-badge">
+                    {{ metric.method }}
+                  </span>
+                </td>
+
+
+                <td class="endpoint-name">
+                  {{ metric.endpoint }}
+                </td>
+
+
+                <td>
+                  {{ metric.request_count }}
+                </td>
+
+
+                <td>
+                  @if (metric.average_latency !== null) {
+                    {{ metric.average_latency | number:'1.0-1' }} ms
+                  } @else {
+                    —
+                  }
+                </td>
+
+
+                <td>
+                  @if (metric.p50_latency !== null) {
+                    {{ metric.p50_latency | number:'1.0-1' }} ms
+                  } @else {
+                    —
+                  }
+                </td>
+
+
+                <td>
+                  @if (metric.p95_latency !== null) {
+                    {{ metric.p95_latency | number:'1.0-1' }} ms
+                  } @else {
+                    —
+                  }
+                </td>
+
+
+                <td>
+                  @if (metric.p99_latency !== null) {
+                    {{ metric.p99_latency | number:'1.0-1' }} ms
+                  } @else {
+                    —
+                  }
+                </td>
+
+
+                <td>
+                  @if (metric.error_rate !== null) {
+                    {{ metric.error_rate | percent:'1.1-2' }}
+                  } @else {
+                    —
+                  }
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+} @else {
+
+  <div class="empty-state">
+    No metrics are available for this environment.
+  </div>
+
+}
+
+      </div>
+
+    } @else {
+
+      <div class="empty-state">
+        No environments are available for this release.
+      </div>
+
+    }
+
+  }
+
+</div>

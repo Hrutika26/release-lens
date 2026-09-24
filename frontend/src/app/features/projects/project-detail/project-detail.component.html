@@ -38,6 +38,10 @@
         + Import Release
       </button>
 
+      <button type="button" class="secondary-button" (click)="openReleaseComparison()">
+        Compare Releases
+      </button>
+
     </div>
 
   </div>
@@ -69,7 +73,7 @@
 
       @for (release of releases; track release.id) {
 
-      <div class="release-card">
+      <div class="release-card" (click)="openRelease(release.id)">
 
         <div class="release-main">
 

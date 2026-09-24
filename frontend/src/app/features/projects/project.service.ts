@@ -5,7 +5,9 @@ import { Observable } from 'rxjs';
 import { CreateProjectRequest, Project, UpdateProjectRequest } from './project.model';
 import { environment } from '../../../environments/environment';
 import { ImportConfirmResponse, ImportJobStatus, ImportPreview } from './release.model.import';
-import { ReleaseSummary } from './release.model';
+import { ReleaseDetail, ReleaseSummary } from './release.model';
+import { EndpointMetric } from './endpoint-metric.model';
+import { ReleaseEnvironmentComparison } from './release-comparison.model';
 
 @Injectable({
   providedIn: 'root',
@@ -73,5 +75,27 @@ export class ProjectService {
     );
   }
 
+  getRelease(projectId: number, releaseId: number): Observable<ReleaseDetail> {
+    return this.http.get<ReleaseDetail>(
+      `${this.apiUrl}/projects/${projectId}/releases/${releaseId}`,
+    );
+  }
 
+  getEnvironmentMetrics(projectId: number, releaseId: number, environmentId: number): Observable<EndpointMetric[]> {
+    return this.http.get<EndpointMetric[]>(
+      `${this.apiUrl}/projects/${projectId}/releases/${releaseId}/environments/${environmentId}/metrics`,
+    );
+  }
+
+  compareReleases(projectId: number, baseEnvironmentId: number, targetEnvironmentId: number): Observable<ReleaseEnvironmentComparison> {
+    return this.http.get<ReleaseEnvironmentComparison>(
+      `${this.apiUrl}/projects/${projectId}/releases/compare`,
+      {
+        params: {
+          base_environment_id: baseEnvironmentId,
+          target_environment_id: targetEnvironmentId,
+        },
+      },
+    );
+  }
 }
