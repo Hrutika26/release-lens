@@ -71,7 +71,9 @@ export class ReleaseComparisonComponent
 
 
   releases: ReleaseSummary[] = [];
+  p95ChartData: ComparisonChartItem[] = [];
 
+  errorRateChartData: ComparisonChartItem[] = [];
   environmentOptions:
     EnvironmentOption[] = [];
 
@@ -277,6 +279,8 @@ export class ReleaseComparisonComponent
           this.comparison =
             comparison;
 
+          this.buildChartData();
+
           this.isComparing = false;
         },
 
@@ -318,61 +322,56 @@ export class ReleaseComparisonComponent
         .get('projectId'),
     );
   }
-
-  get p95ChartData():
-  ComparisonChartItem[] {
-
+  private buildChartData(): void {
   if (!this.comparison) {
-    return [];
+    this.p95ChartData = [];
+    this.errorRateChartData = [];
+
+    return;
   }
 
-  return this.comparison.endpoints
-    .filter(
-      endpoint =>
-        endpoint.p95_latency.base_value !== null ||
-        endpoint.p95_latency.target_value !== null,
-    )
-    .map(endpoint => ({
-      label:
-        `${endpoint.method} ${endpoint.endpoint}`,
+  this.p95ChartData =
+    this.comparison.endpoints
+      .filter(
+        endpoint =>
+          endpoint.p95_latency.base_value !== null ||
+          endpoint.p95_latency.target_value !== null,
+      )
+      .map(endpoint => ({
+        label:
+          `${endpoint.method} ${endpoint.endpoint}`,
 
-      base:
-        endpoint.p95_latency.base_value ?? 0,
+        base:
+          endpoint.p95_latency.base_value ?? 0,
 
-      target:
-        endpoint.p95_latency.target_value ?? 0,
-    }));
+        target:
+          endpoint.p95_latency.target_value ?? 0,
+      }));
+
+
+  this.errorRateChartData =
+    this.comparison.endpoints
+      .filter(
+        endpoint =>
+          endpoint.error_rate.base_value !== null ||
+          endpoint.error_rate.target_value !== null,
+      )
+      .map(endpoint => ({
+        label:
+          `${endpoint.method} ${endpoint.endpoint}`,
+
+        base:
+          (
+            endpoint.error_rate.base_value
+            ?? 0
+          ) * 100,
+
+        target:
+          (
+            endpoint.error_rate.target_value
+            ?? 0
+          ) * 100,
+      }));
 }
 
-
-get errorRateChartData():
-  ComparisonChartItem[] {
-
-  if (!this.comparison) {
-    return [];
-  }
-
-  return this.comparison.endpoints
-    .filter(
-      endpoint =>
-        endpoint.error_rate.base_value !== null ||
-        endpoint.error_rate.target_value !== null,
-    )
-    .map(endpoint => ({
-      label:
-        `${endpoint.method} ${endpoint.endpoint}`,
-
-      base:
-        (
-          endpoint.error_rate.base_value
-          ?? 0
-        ) * 100,
-
-      target:
-        (
-          endpoint.error_rate.target_value
-          ?? 0
-        ) * 100,
-    }));
-  }
 }
