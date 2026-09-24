@@ -1,5 +1,5 @@
 import asyncpg
-
+import json
 from models.endpoint_metric import EndpointMetric
 
 
@@ -35,9 +35,30 @@ class EndpointMetricRepository:
         )
 
         return [
-            EndpointMetric(**dict(row))
-            for row in rows
-        ]
+        EndpointMetric(
+            id=row["id"],
+            release_environment_id=row["release_environment_id"],
+            endpoint=row["endpoint"],
+            method=row["method"],
+            request_count=row["request_count"],
+            average_latency=row["average_latency"],
+            p50_latency=row["p50_latency"],
+            p95_latency=row["p95_latency"],
+            p99_latency=row["p99_latency"],
+            error_rate=row["error_rate"],
+            client_error_rate=row["client_error_rate"],
+            server_error_rate=row["server_error_rate"],
+            additional_metrics=(
+                json.loads(row["additional_metrics"])
+                if isinstance(row["additional_metrics"], str)
+                else row["additional_metrics"]
+            ),
+            metrics_version=row["metrics_version"],
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
+        for row in rows
+    ]
 
     async def recalculate_for_release_environment(self, release_environment_id: int, metrics_version: int = 1) -> None:
         await self.db.execute(
@@ -85,31 +106,29 @@ class EndpointMetricRepository:
                     )::DOUBLE PRECISION
                     AS p99_latency,
 
-                (
+                    (
                     COUNT(*) FILTER (
                         WHERE status_code >= 400
-                    ) * 100.0
+                    )::DOUBLE PRECISION
                     / NULLIF(COUNT(*), 0)
-                )::DOUBLE PRECISION
+                    )::DOUBLE PRECISION
                     AS error_rate,
-
-                (
+                    (
                     COUNT(*) FILTER (
                         WHERE status_code >= 400
-                          AND status_code < 500
-                    ) * 100.0
+                        AND status_code < 500
+                    )::DOUBLE PRECISION
                     / NULLIF(COUNT(*), 0)
-                )::DOUBLE PRECISION
+                    )::DOUBLE PRECISION
                     AS client_error_rate,
 
                 (
                     COUNT(*) FILTER (
                         WHERE status_code >= 500
-                    ) * 100.0
+                    )::DOUBLE PRECISION
                     / NULLIF(COUNT(*), 0)
                 )::DOUBLE PRECISION
                     AS server_error_rate,
-
                 '{}'::jsonb
                     AS additional_metrics,
 
@@ -146,3 +165,44 @@ class EndpointMetricRepository:
             release_environment_id,
             metrics_version,
         )
+
+    async def get_environment_summary(self, release_environment_id: int) -> dict | None:
+        row = await self.db.fetchrow(
+            """
+            SELECT
+                COUNT(*) AS total_requests,
+
+                AVG(response_time_ms)::DOUBLE PRECISION
+                    AS average_latency,
+
+                percentile_cont(0.95)
+                    WITHIN GROUP (
+                        ORDER BY response_time_ms
+                    )::DOUBLE PRECISION
+                    AS p95_latency,
+
+                percentile_cont(0.99)
+                    WITHIN GROUP (
+                        ORDER BY response_time_ms
+                    )::DOUBLE PRECISION
+                    AS p99_latency,
+
+                (
+                    COUNT(*) FILTER (
+                        WHERE status_code >= 400
+                    )::DOUBLE PRECISION
+                    / NULLIF(COUNT(*), 0)
+                )::DOUBLE PRECISION
+                    AS error_rate
+
+            FROM api_request
+
+            WHERE release_environment_id = $1
+            """,
+            release_environment_id,
+        )
+
+        if row is None:
+            return None
+
+        return dict(row)

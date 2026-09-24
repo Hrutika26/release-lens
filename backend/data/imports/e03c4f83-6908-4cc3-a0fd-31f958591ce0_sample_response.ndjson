@@ -1,0 +1,4 @@
+{"type":"metadata","version":"v1.6","environment":"production","deployedAt":"2026-09-23T14:00:00Z","commitSha":"new123"}
+{"type":"request","requestId":"v16_001","timestamp":"2026-09-23T14:01:01Z","endpoint":"/checkout","method":"POST","statusCode":200,"responseTimeMs":350}
+{"type":"request","requestId":"v16_002","timestamp":"2026-09-23T14:01:02Z","endpoint":"/checkout","method":"POST","statusCode":500,"responseTimeMs":700}
+{"type":"request","requestId":"v16_003","timestamp":"2026-09-23T14:01:03Z","endpoint":"/orders","method":"GET","statusCode":500,"responseTimeMs":250}

@@ -22,3 +22,13 @@ class ReleaseSummaryResponse(BaseModel):
     updated_at: datetime
 
     environments: list[ReleaseEnvironmentResponse]
+
+class ReleaseDetailResponse(BaseModel):
+    id: int
+    project_id: int
+    version: str
+    commit_sha: str | None
+    created_at: datetime
+    updated_at: datetime
+
+    environments: list[ReleaseEnvironmentResponse]
