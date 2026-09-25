@@ -6,6 +6,13 @@ Upload an NDJSON file of API traffic for a given version and environment, and Re
 stores the raw requests, computes per-endpoint metrics (latency percentiles, error rates),
 and lets you compare two releases side by side.
 
+## Architecture
+
+![Release Lens architecture](images/architecture-diagram.png)
+
+Dependencies point one way only: `api-> services-> repositories-> database`.
+Routers never write SQL; repositories never know about HTTP.
+
 ## Stack
 
 | Layer | Tech |
@@ -98,10 +105,12 @@ frontend/src/app/
   shared/             reusable d3 chart
 ```
 
-Dependencies point one way only: `api → services → repositories → database`.
+Dependencies point one way only: `api-> services-> repositories-> database`.
 Routers never write SQL; repositories never know about HTTP.
 
 ## Data model
+
+![Database schema](images/schema-design.jpeg)
 
 ```
 project ──< release ──< release_environment ──< api_request      (raw requests)
@@ -111,6 +120,19 @@ project ──< release ──< release_environment ──< api_request      (ra
 
 Metrics attach to `release_environment` rather than `release`, because the same version
 deployed to staging and to production are different deployments with different traffic.
+
+Key constraints:
+
+| Constraint | Purpose |
+|---|---|
+| `UNIQUE (project_id, version)` | versions are unique within a project, not globally |
+| `UNIQUE (release_id, environment)` | one row per version-per-environment |
+| `UNIQUE (release_environment_id, request_id)` | makes re-importing a file idempotent |
+| `UNIQUE (release_environment_id, method, endpoint)` | one metric row per endpoint; the upsert target |
+| `FOREIGN KEY … ON DELETE CASCADE` | deleting a project removes everything it owns |
+
+`schema_migrations` is created by the migration runner and records which versioned
+`.sql` files have been applied.
 
 ## Configuration
 
